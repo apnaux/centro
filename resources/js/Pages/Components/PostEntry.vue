@@ -86,7 +86,7 @@ watchEffect(() => {
                         </svg>
                     </button>
 
-                    <form class="flex p-6 flex-col gap-y-3 absolute left-8 top-0 z-20 w-96 bg-white border" @submit.prevent="submitComment" v-if="commentToggle" @focusout="closeBox" ref="box">
+                    <form class="flex p-6 flex-col gap-y-3 absolute left-8 bottom-0 z-20 w-96 bg-white border" @submit.prevent="submitComment" v-if="commentToggle" @focusout="closeBox" ref="box">
                         <h1>Comment on this post!</h1>
                         <textarea name="comment" id="comment" cols="1" rows="5" class="resize-none" v-model="comment.comment"></textarea>
                         <button type="submit" class="border text-white bg-black px-4 py-3 text-sm w-fit">Comment!</button>
