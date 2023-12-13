@@ -42,7 +42,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post/create', [PostController::class, 'create_post']);
 
-    // Route::post('/post/{id}/create/comment', [CommentController::class, 'comment_to_post']);
+    // Route::post('/post/{id}/comment/create', [CommentController::class, 'comment_to_post']);
+
+    // Route::post('/post/{id}/comment/like', [CommentController::class, 'like_comment']);
 
     Route::post('/friend/request/add/{username}', [FriendController::class, 'add_friend_request']);
 

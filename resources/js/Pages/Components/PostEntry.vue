@@ -1,9 +1,10 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 
 const props = defineProps(['post']);
 
+const box = ref(null);
 const commentToggle = ref(false);
 const comment = useForm({
     'comment': ''
@@ -13,6 +14,10 @@ const toggleComment = function (){
     commentToggle.value = !commentToggle.value;
 }
 
+const closeBox = function () {
+    commentToggle.value = false;
+}
+
 const submitComment = function (){
     comment.post('/post/' + props.post.id + '/comments/create', {
         onSuccess: () => {
@@ -20,6 +25,13 @@ const submitComment = function (){
         }
     })
 }
+
+watchEffect(() => {
+    if(box.value !== null) {
+        const textarea = box.value.children[1];
+        textarea.focus();
+    }
+});
 </script>
 
 <template>
@@ -32,7 +44,7 @@ const submitComment = function (){
                         <p>{{ post.user.name }} <span
                                 v-if="post.user.username == $page.props.auth.user.username">(You)</span></p>
                         <div class="text-sm">
-                            <Link as="a" :href="'/profile/' + post.user.username"
+                            <Link as="a" class="underline underline-offset-1" :href="'/profile/' + post.user.username"
                                 v-if="post.user.username != $page.props.auth.user.username">@{{ post.user.username
                                 }} </Link>
                             <p v-else>@{{ post.user.username }}</p>
@@ -74,12 +86,15 @@ const submitComment = function (){
                         </svg>
                     </button>
 
-                    <form class="flex p-6 flex-col gap-y-3 absolute left-8 top-0 z-20 w-96 bg-white border" @submit.prevent="submitComment" v-if="commentToggle">
+                    <form class="flex p-6 flex-col gap-y-3 absolute left-8 top-0 z-20 w-96 bg-white border" @submit.prevent="submitComment" v-if="commentToggle" @focusout="closeBox" ref="box">
                         <h1>Comment on this post!</h1>
                         <textarea name="comment" id="comment" cols="1" rows="5" class="resize-none" v-model="comment.comment"></textarea>
                         <button type="submit" class="border text-white bg-black px-4 py-3 text-sm w-fit">Comment!</button>
                     </form>
                 </div>
+
+                <p class="text-sm text-black/50">0 Like(s)</p>
+                <p class="text-sm text-black/50">0 Comment(s)</p>
             </div>
         </div>
 
@@ -93,7 +108,7 @@ const submitComment = function (){
                     </svg>
                 </span>
 
-                Post Comments
+                Comments
             </p>
 
             <div class="flex flex-col gap-y-4 px-8 pb-8">
@@ -102,10 +117,17 @@ const submitComment = function (){
 
                     </div>
 
-                    <div class="flex flex-col text-sm">
+                    <div class="flex flex-col text-sm gap-y-1">
                         <p class="font-medium">@theuser123</p>
                         <p>dolor sit amet consectetur adipiscing elit pellentesque habitant morbi tristique senectus
                             et netus et malesuada</p>
+                        <Link as="button" type="button" href="">
+                            <svg width="24" height="24" class="stroke-black stroke-0" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Zm6.548 6.54L12 19.485 4.635 12.12a3.875 3.875 0 1 1 5.48-5.48l1.358 1.357a.75.75 0 0 0 1.073-.012L13.88 6.64a3.88 3.88 0 0 1 5.487 5.48Z" />
+                            </svg>
+                        </Link>
                     </div>
                 </div>
             </div>
