@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
 use App\Models\Comment;
 use App\Models\Like;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Auth;
 
 class Post extends Model
 {
@@ -21,7 +23,7 @@ class Post extends Model
         'post',
         'visibility',
     ];
-
+    
     public function user() : BelongsTo {
         return $this->belongsTo(User::class);
     }

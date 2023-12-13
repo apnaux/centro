@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -29,14 +30,25 @@ Route::post('/login', [AccountController::class, 'login']);
 Route::post('/register', [AccountController::class, 'register']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/home', function () {
-        return redirect('/home/me');
-    })->name('home');
+    Route::get('/home', [PostController::class, 'retrieve_friends_posts'])->name('home');
 
-    Route::get('/home/me', [PostController::class, 'retrieve_user_post']);
-    Route::get('/home/all', [PostController::class, 'retrieve_all_post']);
+    Route::get('/home/me', [PostController::class, 'retrieve_user_posts']);
 
-    Route::post('/create/post', [PostController::class, 'create_post']);
+    Route::get('/home/public', [PostController::class, 'retrieve_all_posts']);
+
+    // Route::get('/notifications', [NotificationsController::class, 'index']);
+
+    // Route::post('/post/{id}/like', [PostController::class, 'like_post']);
+
+    Route::post('/post/create', [PostController::class, 'create_post']);
+
+    // Route::post('/post/{id}/create/comment', [CommentController::class, 'comment_to_post']);
+
+    Route::post('/friend/request/add/{username}', [FriendController::class, 'add_friend_request']);
+
+    Route::post('/friend/request/accept/{id}', [FriendController::class, 'accept_friend_request']);
+
+    Route::delete('/friend/request/delete/{id}', [FriendController::class, 'delete_friend_request']);
 
     Route::post('/logout', [AccountController::class, 'logout']);
 });
