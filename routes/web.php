@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home/notifications/delete/{id}', [NotificationController::class, 'delete']);
 
-    Route::post('/post/{id}/delete', [PostController::class, 'delete']);
+    Route::delete('/post/{id}/delete', [PostController::class, 'delete']);
 
     Route::get('/post/{id}/comments', [CommentController::class, 'index']);
 

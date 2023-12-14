@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\Friend;
 use App\Models\Like;
 use App\Models\Post;
@@ -144,6 +145,17 @@ class PostController extends Controller
                     ]
                 ]),
         ]);
+    }
+
+    public function delete(Request $request, $id){
+        Post::destroy($id);
+        Log::debug(Like::whereHasMorph('liked', [Post::class], function ($query) use ($id){
+            $query->where('liked_id', $id);
+        })->get());
+        Like::where('liked_type', Post::class)
+            ->where('liked_id', $id)->delete();
+        Comment::where('post_id', $id)->delete();
+        return back()->with('success', 'You\'ve deleted your post');
     }
 
     public function like_post(Request $request, int $id){
