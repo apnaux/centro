@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Friend;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -40,7 +42,14 @@ class PostController extends Controller
                     'id' => $post->id,
                     'visibility' => $post->visibility,
                     'post' => $post->post,
+                    'is_liked' => Like::whereHasMorph('liked', Post::class, function ($query) use ($post) {
+                        $query->where('user_id', $post->user_id)
+                            ->where('liked_type', Post::class)
+                            ->where('liked_id', $post->id);
+                    })->count() > 0,
                     'created_at' => $post->created_at,
+                    'like_count' => $post->like->count(),
+                    'comment_count' => $post->comments->count(),
                     'user' => [
                         'id'=> $post->user->id,
                         'profile_image' => $post->user->profile_image,
@@ -66,7 +75,10 @@ class PostController extends Controller
                     'id' => $post->id,
                     'visibility' => $post->visibility,
                     'post' => $post->post,
+                    'is_liked' => $post->like()->where('user_id', Auth::id())->exists(),
                     'created_at' => $post->created_at,
+                    'like_count' => $post->like->count(),
+                    'comment_count' => $post->comments->count(),
                     'user' => [
                         'id'=> $post->user->id,
                         'profile_image' => $post->user->profile_image,
@@ -93,7 +105,14 @@ class PostController extends Controller
                     'id' => $post->id,
                     'visibility' => $post->visibility,
                     'post' => $post->post,
+                    'is_liked' => Like::where(function ($query) use ($post) {
+                        $query->where('user_id', Auth::id())
+                            ->where('liked_type', Post::class)
+                            ->where('liked_id', $post->id);
+                    })->count() > 0,
                     'created_at' => $post->created_at,
+                    'like_count' => $post->like->count(),
+                    'comment_count' => $post->comments->count(),
                     'user' => [
                         'id'=> $post->user->id,
                         'profile_image' => $post->user->profile_image,
@@ -125,5 +144,26 @@ class PostController extends Controller
                     ]
                 ]),
         ]);
+    }
+
+    public function like_post(Request $request, int $id){
+        $post = Post::find($id);
+
+        $like = new Like(['user_id' => Auth::id()]);
+        $like->liked()->associate($post);
+        $like->save();
+
+        //TODO: Add notificaton to the user whose post was liked
+
+        return back()->with('success', 'You\'ve liked a post!');
+    }
+
+    public function unlike_post(Request $request, int $id){
+        $like = Like::where('user_id', Auth::id())->whereHasMorph('liked', [Post::class], function ($query) use ($id) {
+            $query->where('liked_id', $id);
+        });
+        $like->delete();
+
+        return back()->with('success', 'You\'ve unliked the post.');
     }
 }

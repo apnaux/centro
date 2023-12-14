@@ -2,9 +2,13 @@
 import Sidebar from './Layouts/Sidebar.vue';
 import PostEntry from './Components/PostEntry.vue';
 
-defineOptions({
+
+</script>
+
+<script>
+export default {
     layout: Sidebar,
-})
+}
 </script>
 
 <template>

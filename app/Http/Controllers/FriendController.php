@@ -19,7 +19,7 @@ class FriendController extends Controller
 
         $check_if_exist = Friend::where('user_id', $user_to_add->id)->where('friend_id', Auth::id())->first();
         if(isset($check_if_exist)){
-            $this->accept_friend_request($request, $check_if_exist->id);
+            $this->accept_friend_request($request, $check_if_exist->user->username);
             return 0;
         }
 
@@ -28,7 +28,7 @@ class FriendController extends Controller
         $friend->friend_id = $user_to_add->id;
         $friend->save();
 
-        $friend->friend->notify(new FriendRequestNotification($friend, $user_to_add));
+        $user_to_add->notify(new FriendRequestNotification($friend, User::find(Auth::id())));
         
         return back()->with('success', 'You\'ve sent a request to @' . $username);
     }
@@ -36,20 +36,20 @@ class FriendController extends Controller
     public function accept_friend_request(Request $request, string $username){
         $requesting_user = User::where('username', $username)->first();
 
-        $request = Friend::where('user_id', $requesting_user->id)->where('friend_id', Auth::id())->first();
-        $request->accepted_request = true;
+        Log::debug($requesting_user);
+
+        $existing_request = Friend::where('user_id', $requesting_user->id)->where('friend_id', Auth::id())->first();
+        $existing_request->accepted_request = true;
 
         $friend_request = new Friend();
         $friend_request->user_id = Auth::id();
-        $friend_request->friend_id = $request->user_id;
+        $friend_request->friend_id = $existing_request->user_id;
         $friend_request->accepted_request = true;
 
-        $request->save();
+        $existing_request->save();
         $friend_request->save();
 
-        $request->user->notify(new AcceptedFriendRequestNotification($friend_request, $requesting_user));
-
-        //TODO: Add success message for front-end
+        $existing_request->user->notify(new AcceptedFriendRequestNotification($friend_request, User::find(Auth::id())));
 
         return back()->with('success', 'You are now friends with @' . $requesting_user->username);
     }

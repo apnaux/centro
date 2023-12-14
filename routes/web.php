@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -32,13 +34,15 @@ Route::post('/register', [AccountController::class, 'register']);
 Route::middleware('auth')->group(function () {
     Route::get('/home', [PostController::class, 'retrieve_friends_posts'])->name('home');
 
-    Route::get('/home/me', [PostController::class, 'retrieve_user_posts']);
-
     Route::get('/home/public', [PostController::class, 'retrieve_all_posts']);
 
-    // Route::get('/notifications', [NotificationsController::class, 'index']);
+    Route::get('/home/notifications', [NotificationController::class, 'index']);
 
-    // Route::post('/post/{id}/like', [PostController::class, 'like_post']);
+    Route::get('/post/{id}/comments', [CommentController::class, 'index']);
+
+    Route::post('/post/{id}/like', [PostController::class, 'like_post']);
+
+    Route::post('/post/{id}/unlike', [PostController::class, 'unlike_post']);
 
     Route::post('/post/create', [PostController::class, 'create_post']);
 
