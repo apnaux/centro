@@ -1,5 +1,5 @@
 import './bootstrap';
-import { createApp, h } from 'vue'
+import { createApp, h, Transition } from 'vue'
 import { createInertiaApp, Link, Head } from '@inertiajs/vue3'
 
 createInertiaApp({
@@ -12,6 +12,7 @@ createInertiaApp({
       .use(plugin)
       .component("Link", Link)
       .component("Head", Head)
+      .component("Transition", Transition)
       .mount(el)
   },
   title: () => "centro"

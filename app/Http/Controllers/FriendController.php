@@ -28,7 +28,7 @@ class FriendController extends Controller
         $friend->friend_id = $user_to_add->id;
         $friend->save();
 
-        $user_to_add->notify(new FriendRequestNotification($friend, User::find(Auth::id())));
+        $user_to_add->notify(new FriendRequestNotification($friend->id, $friend, User::find(Auth::id())));
         
         return back()->with('success', 'You\'ve sent a request to @' . $username);
     }
@@ -49,7 +49,13 @@ class FriendController extends Controller
         $existing_request->save();
         $friend_request->save();
 
-        $existing_request->user->notify(new AcceptedFriendRequestNotification($friend_request, User::find(Auth::id())));
+        $notified_user = $request->user();
+        $notified_user->notifications()
+            ->where('type', FriendRequestNotification::class)
+            ->whereJsonContains('data->friend_request->id', $existing_request->id)
+            ->delete();
+
+        $existing_request->user->notify(new AcceptedFriendRequestNotification($existing_request->id, $friend_request, User::find(Auth::id())));
 
         return back()->with('success', 'You are now friends with @' . $requesting_user->username);
     }
@@ -59,5 +65,11 @@ class FriendController extends Controller
         Friend::destroy($id);
 
         return back()->with("success", "The friend request has been deleted.");
+    }
+
+    public function check_count(Request $request){
+        return [
+            'friendRequestCount' => Friend::where('friend_id', Auth::id())->where('accepted_request', 0)->count()
+        ];
     }
 }

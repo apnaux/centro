@@ -1,6 +1,9 @@
 <script setup>
-import PostEntry from '../Components/PostEntry.vue';
 import { useForm } from '@inertiajs/vue3';
+import { onBeforeMount, onMounted, ref, watch } from 'vue';
+
+const props = defineProps(['auth']);
+const requestsCount = ref(0);
 
 const message = useForm({
     message: '',
@@ -14,6 +17,25 @@ function postMessage() {
         }
     });
 }
+
+onBeforeMount(function () {
+    axios.get('/me/count/friendrequest').then(
+        function (res) {
+            requestsCount.value = res.data.friendRequestCount;
+        }
+    );
+});
+
+onMounted(function () {
+    setInterval(function () {
+        axios.get('/me/count/friendrequest').then(
+            function (res) {
+                requestsCount.value = res.data.friendRequestCount;
+                console.log(res);
+            }
+        );
+    }, 30000);
+});
 </script>
 
 <template>
@@ -63,7 +85,7 @@ function postMessage() {
 
             <div class="">
                 <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full">
-                    Friend Requests (0)
+                    Friend Requests ({{ requestsCount }})
                     <p>></p>
                 </button>
 

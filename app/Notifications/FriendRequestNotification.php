@@ -13,6 +13,7 @@ class FriendRequestNotification extends Notification
 {
     use Queueable;
 
+    public string $request_id;
     public Friend $friend_request;
     public User $to_friend;
 
@@ -20,8 +21,9 @@ class FriendRequestNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(Friend $friend_request, User $to_friend)
-    {
+    public function __construct(string $request_id, Friend $friend_request, User $to_friend)
+    {   
+        $this->request_id = $request_id;
         $this->friend_request = $friend_request;
         $this->to_friend = $to_friend;
     }
@@ -55,6 +57,7 @@ class FriendRequestNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            'request_id' => $this->request_id,
             'friend_request' => $this->friend_request,
             'to_friend'=> $this->to_friend
         ];

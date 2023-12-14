@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home/notifications', [NotificationController::class, 'index']);
 
+    Route::get('/home/notifications/delete/{id}', [NotificationController::class, 'delete']);
+
+    Route::post('/post/{id}/delete', [PostController::class, 'delete']);
+
     Route::get('/post/{id}/comments', [CommentController::class, 'index']);
 
     Route::post('/post/{id}/like', [PostController::class, 'like_post']);
@@ -46,15 +50,19 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post/create', [PostController::class, 'create_post']);
 
-    // Route::post('/post/{id}/comment/create', [CommentController::class, 'comment_to_post']);
+    Route::post('/post/{id}/comments/create', [CommentController::class, 'create']);
 
-    // Route::post('/post/{id}/comment/like', [CommentController::class, 'like_comment']);
+    // Route::post('/post/{pid}/comments/{cid}/like', [CommentController::class, 'like_comment']);
+
+    // Route::post('/post/{pid}/comments/{cid}/unlike', [CommentController::class, 'like_comment']);
 
     Route::post('/friend/request/add/{username}', [FriendController::class, 'add_friend_request']);
 
     Route::post('/friend/request/accept/{id}', [FriendController::class, 'accept_friend_request']);
 
     Route::delete('/friend/request/delete/{id}', [FriendController::class, 'delete_friend_request']);
+
+    Route::get('/me/count/friendrequest', [FriendController::class, 'check_count']);
 
     Route::post('/logout', [AccountController::class, 'logout']);
 });
