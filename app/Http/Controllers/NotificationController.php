@@ -11,9 +11,13 @@ class NotificationController extends Controller
 {
     public function index(Request $request) {
         $request->user()->unreadNotifications->markAsRead();
-        return Inertia::render("Notifications", [
+        return [
             'notifications' => $request->user()->notifications()->cursorPaginate(15),
-        ]);
+        ];
+    }
+
+    public function count(Request $request){
+        return $request->user()->unreadNotifications()->count();
     }
 
     public function delete(Request $request, $id) {

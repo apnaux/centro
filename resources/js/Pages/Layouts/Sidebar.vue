@@ -3,9 +3,14 @@ import { useForm } from '@inertiajs/vue3';
 import { onBeforeMount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps(['auth']);
+
 const toggleRequest = ref(false);
 const requestsCount = ref(0);
 const friendRequests = ref({});
+
+const toggleNotifications = ref(false);
+const notificationsCount = ref(0);
+const notifications = ref({});
 
 const message = useForm({
     message: '',
@@ -27,6 +32,12 @@ onBeforeMount(function () {
             requestsCount.value = res.data.friendRequestCount;
         }
     );
+
+    axios.get('/home/notifications/count').then(
+        function (res) {
+            notificationsCount.value = res.data
+        }
+    );
 });
 
 onMounted(function () {
@@ -37,6 +48,12 @@ onMounted(function () {
                 console.log(res);
             }
         );
+
+        axios.get('/home/notifications/count').then(
+            function (res) {
+                notificationsCount.value = res.data
+            }
+        );
     }, 30000);
 });
 
@@ -45,6 +62,17 @@ watch(toggleRequest, (x) => {
         axios.get('/friend/request').then(
             function (res) {
                 friendRequests.value = res.data.friendRequests;
+            }
+        );
+    }
+});
+
+watch(toggleNotifications, (x) => {
+    if (x) {
+        axios.get('/home/notifications').then(
+            function (res) {
+                notifications.value = res.data.notifications;
+                console.log(notifications.value);
             }
         );
     }
@@ -107,7 +135,7 @@ watch(toggleRequest, (x) => {
             <slot></slot>
         </div>
 
-        <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-h-screen">
+        <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-w-[22rem] max-h-screen">
             <div class="h-12 p-2 flex flex-row justify-evenly">
                 <Link as="button" type="button" href="/home" method="get">friends</Link>
                 <Link as="button" type="button" href="/home/public" method="get">public</Link>
@@ -146,30 +174,36 @@ watch(toggleRequest, (x) => {
 
             <div>
                 <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full"
-                    @click="() => { toggleRequest = !toggleRequest }">
-                    Your Notifications ({{ requestsCount }})
+                    @click="() => { toggleNotifications = !toggleNotifications }">
+                    Your Notifications ({{ notificationsCount }})
                     <p>></p>
                 </button>
 
-                <div class="flex flex-col max-h-64 border border-t-0" v-if="toggleRequest">
-                    <div class="flex flex-col px-4 py-3 gap-y-2 border-b" v-for="request in friendRequests">
-                        <div class="flex flex-row gap-x-4 items-center">
+                <div class="flex flex-col max-h-64 border border-t-0" v-if="toggleNotifications">
+                    <div class="flex flex-col px-4 py-3 gap-y-2 border-b" v-for="notification in notifications.data">
+                        <div class="flex flex-row gap-x-4 items-center"
+                            v-if="notification.type.includes('AcceptedFriendRequestNotification')">
                             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M17.5 12a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm-5.477 2a6.47 6.47 0 0 0-.709 1.5H4.253a.749.749 0 0 0-.75.75v.577c0 .535.192 1.053.54 1.46 1.253 1.469 3.22 2.214 5.957 2.214.597 0 1.157-.035 1.68-.106.246.495.553.954.912 1.367-.795.16-1.66.24-2.592.24-3.146 0-5.532-.906-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.578A2.249 2.249 0 0 1 4.253 14h7.77Zm5.477 0-.09.008a.5.5 0 0 0-.402.402L17 14.5V17h-2.496l-.09.008a.5.5 0 0 0-.402.402l-.008.09.008.09a.5.5 0 0 0 .402.402l.09.008H17L17 20.5l.008.09a.5.5 0 0 0 .402.402l.09.008.09-.008a.5.5 0 0 0 .402-.402L18 20.5V18h2.504l.09-.008a.5.5 0 0 0 .402-.402l.008-.09-.008-.09a.5.5 0 0 0-.402-.402l-.09-.008H18L18 14.5l-.008-.09a.5.5 0 0 0-.402-.402L17.5 14ZM10 2.005a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
                                     fill="#212121" />
                             </svg>
-                            <p class="leading-5">
-                                <span class="font-medium">@{{ request.user.username }}</span>
-                                <br>
-                                wants you to be their friend!
-                            </p>
 
+                            <p><span class="font-medium">@{{ notification.data.user.username }}</span> has accepted your
+                                friend
+                                request!</p>
                         </div>
 
-                        <div class="flex flex-row gap-x-2 ml-10">
-                            <button type="button">Accept</button>
-                            <button type="button">Decline</button>
+                        <div class="flex flex-row gap-x-4 items-center"
+                            v-if="notification.type.includes('FriendRequestNotification')">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.5 12a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm-5.477 2a6.47 6.47 0 0 0-.709 1.5H4.253a.749.749 0 0 0-.75.75v.577c0 .535.192 1.053.54 1.46 1.253 1.469 3.22 2.214 5.957 2.214.597 0 1.157-.035 1.68-.106.246.495.553.954.912 1.367-.795.16-1.66.24-2.592.24-3.146 0-5.532-.906-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.578A2.249 2.249 0 0 1 4.253 14h7.77Zm5.477 0-.09.008a.5.5 0 0 0-.402.402L17 14.5V17h-2.496l-.09.008a.5.5 0 0 0-.402.402l-.008.09.008.09a.5.5 0 0 0 .402.402l.09.008H17L17 20.5l.008.09a.5.5 0 0 0 .402.402l.09.008.09-.008a.5.5 0 0 0 .402-.402L18 20.5V18h2.504l.09-.008a.5.5 0 0 0 .402-.402l.008-.09-.008-.09a.5.5 0 0 0-.402-.402l-.09-.008H18L18 14.5l-.008-.09a.5.5 0 0 0-.402-.402L17.5 14ZM10 2.005a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+                                    fill="#212121" />
+                            </svg>
+
+                            <p><span class="font-medium">@{{ notification.data.to_friend.username }}</span> wants to add you as
+                                their friend!</p>
                         </div>
                     </div>
                 </div>
