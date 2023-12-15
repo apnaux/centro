@@ -43,12 +43,9 @@ class PostController extends Controller
                     'id' => $post->id,
                     'visibility' => $post->visibility,
                     'post' => $post->post,
-                    'is_liked' => Like::whereHasMorph('liked', Post::class, function ($query) use ($post) {
-                        $query->where('user_id', $post->user_id)
-                            ->where('liked_type', Post::class)
-                            ->where('liked_id', $post->id);
-                    })->count() > 0,
+                    'is_liked' => $post->like()->where('user_id', Auth::id())->exists(),
                     'created_at' => $post->created_at,
+                    'updated_at' => $post->updated_at,
                     'like_count' => $post->like->count(),
                     'comment_count' => $post->comments->count(),
                     'user' => [
@@ -78,6 +75,7 @@ class PostController extends Controller
                     'post' => $post->post,
                     'is_liked' => $post->like()->where('user_id', Auth::id())->exists(),
                     'created_at' => $post->created_at,
+                    'updated_at' => $post->updated_at,
                     'like_count' => $post->like->count(),
                     'comment_count' => $post->comments->count(),
                     'user' => [
@@ -106,12 +104,9 @@ class PostController extends Controller
                     'id' => $post->id,
                     'visibility' => $post->visibility,
                     'post' => $post->post,
-                    'is_liked' => Like::where(function ($query) use ($post) {
-                        $query->where('user_id', Auth::id())
-                            ->where('liked_type', Post::class)
-                            ->where('liked_id', $post->id);
-                    })->count() > 0,
+                    'is_liked' => $post->like()->where('user_id', Auth::id())->exists(),
                     'created_at' => $post->created_at,
+                    'updated_at' => $post->updated_at,
                     'like_count' => $post->like->count(),
                     'comment_count' => $post->comments->count(),
                     'user' => [
@@ -145,6 +140,20 @@ class PostController extends Controller
                     ]
                 ]),
         ]);
+    }
+
+    public function edit(Request $request, $id){
+        $validated = $request->validate([
+            "message" => "required|max:255",
+            "visibility" => "required"
+        ]);
+
+        $post = Post::find($id);
+        $post->post = $validated["message"];
+        $post->visibility = $validated["visibility"];
+        $post->save();
+
+        return back()->with('success', 'You\'ve successfully edited your post!');
     }
 
     public function delete(Request $request, $id){

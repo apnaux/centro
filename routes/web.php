@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/post/{id}/comments', [CommentController::class, 'index']);
 
+    Route::patch('/post/{id}/edit', [PostController::class, 'edit']);
+
     Route::post('/post/{id}/like', [PostController::class, 'like_post']);
 
     Route::post('/post/{id}/unlike', [PostController::class, 'unlike_post']);
@@ -52,9 +54,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post/{id}/comments/create', [CommentController::class, 'create']);
 
-    // Route::post('/post/{pid}/comments/{cid}/like', [CommentController::class, 'like_comment']);
+    Route::delete('/post/{pid}/comments/{cid}/delete', [CommentController::class, 'delete']);
 
-    // Route::post('/post/{pid}/comments/{cid}/unlike', [CommentController::class, 'like_comment']);
+    Route::post('/post/{pid}/comments/{cid}/like', [CommentController::class, 'like']);
+
+    Route::delete('/post/{pid}/comments/{cid}/unlike', [CommentController::class, 'unlike']);
 
     Route::post('/friend/request/add/{username}', [FriendController::class, 'add_friend_request']);
 

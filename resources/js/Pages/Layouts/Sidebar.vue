@@ -12,6 +12,7 @@ const message = useForm({
 
 function postMessage() {
     message.post("/post/create", {
+        preserveState: false,
         onSuccess: () => {
             message.reset();
         }
@@ -40,8 +41,8 @@ onMounted(function () {
 
 <template>
     <div class="flex flex-row justify-between overflow-visible">
-        <div class="h-screen flex flex-col gap-y-4 sticky top-0 py-20 ml-48 min-w-[22rem]">
-            <div class="border h-20"></div>
+        <div class="flex flex-col gap-y-4 sticky top-0 py-20 ml-48 min-w-[22rem] max-h-screen">
+            <div class="border h-20 flex-shrink-0"></div>
             <div class="border h-48 flex flex-col mt-12 justify-between">
                 <div class="flex flex-col items-center gap-y-4 relative -top-1/4">
                     <div class="h-24 w-24 bg-gray-300">
@@ -99,7 +100,7 @@ onMounted(function () {
             <slot></slot>
         </div>
 
-        <div class="h-screen flex flex-col gap-y-4 sticky top-0 py-20 mr-48 min-w-[22rem]">
+        <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-h-screen">
             <div class="h-12 p-2 flex flex-row justify-evenly">
                 <Link as="button" type="button" href="/home" method="get">friends</Link>
                 <Link as="button" type="button" href="/home/public" method="get">public</Link>
