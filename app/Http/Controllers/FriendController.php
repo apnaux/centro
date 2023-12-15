@@ -67,6 +67,14 @@ class FriendController extends Controller
         return back()->with("success", "The friend request has been deleted.");
     }
 
+    public function index(Request $request){
+        return [
+            'friendRequests' => Friend::where('friend_id', $request->user()->id)
+                ->where('accepted_request', false)
+                ->with(['user:id,name,username,profile_image'])->get(),
+        ];
+    }
+
     public function check_count(Request $request){
         return [
             'friendRequestCount' => Friend::where('friend_id', Auth::id())->where('accepted_request', 0)->count()

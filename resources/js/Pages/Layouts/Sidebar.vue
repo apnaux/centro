@@ -3,7 +3,9 @@ import { useForm } from '@inertiajs/vue3';
 import { onBeforeMount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps(['auth']);
+const toggleRequest = ref(false);
 const requestsCount = ref(0);
+const friendRequests = ref({});
 
 const message = useForm({
     message: '',
@@ -20,7 +22,7 @@ function postMessage() {
 }
 
 onBeforeMount(function () {
-    axios.get('/me/count/friendrequest').then(
+    axios.get('/friend/request/count').then(
         function (res) {
             requestsCount.value = res.data.friendRequestCount;
         }
@@ -29,7 +31,7 @@ onBeforeMount(function () {
 
 onMounted(function () {
     setInterval(function () {
-        axios.get('/me/count/friendrequest').then(
+        axios.get('/friend/request/count').then(
             function (res) {
                 requestsCount.value = res.data.friendRequestCount;
                 console.log(res);
@@ -37,25 +39,34 @@ onMounted(function () {
         );
     }, 30000);
 });
+
+watch(toggleRequest, (x) => {
+    if (x) {
+        axios.get('/friend/request').then(
+            function (res) {
+                friendRequests.value = res.data.friendRequests;
+            }
+        );
+    }
+});
 </script>
 
 <template>
     <div class="flex flex-row justify-between overflow-visible">
         <div class="flex flex-col gap-y-4 sticky top-0 py-20 ml-48 min-w-[22rem] max-h-screen">
-            <div class="border h-20 flex-shrink-0"></div>
-            <div class="border h-48 flex flex-col mt-12 justify-between">
-                <div class="flex flex-col items-center gap-y-4 relative -top-1/4">
-                    <div class="h-24 w-24 bg-gray-300">
+            <div class="border flex flex-row justify-between items-center">
+                <div class="flex flex-row items-center gap-x-4">
+                    <div class="h-20 w-20 bg-gray-300">
 
                     </div>
 
-                    <div class="flex flex-col leading-none items-center">
-                        <p class="text-lg font-medium">{{ $page.props.auth.user.name }}</p>
-                        <p>@{{ $page.props.auth.user.username }}</p>
+                    <div class="flex flex-col">
+                        <p class="font-medium leading-none">{{ $page.props.auth.user.name }}</p>
+                        <p class="text-sm">@{{ $page.props.auth.user.username }}</p>
                     </div>
                 </div>
 
-                <div class="flex flex-row gap-x-2 justify-center w-full mb-8">
+                <div class="flex flex-row gap-x-2 items-center mr-4">
                     <Link as="button" type="button" href="">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -63,13 +74,7 @@ onMounted(function () {
                             fill="#212121" />
                     </svg>
                     </Link>
-                    <Link as="button" type="button" href="">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M12.012 2.25c.734.008 1.465.093 2.182.253a.75.75 0 0 1 .582.649l.17 1.527a1.384 1.384 0 0 0 1.927 1.116l1.401-.615a.75.75 0 0 1 .85.174 9.792 9.792 0 0 1 2.204 3.792.75.75 0 0 1-.271.825l-1.242.916a1.381 1.381 0 0 0 0 2.226l1.243.915a.75.75 0 0 1 .272.826 9.797 9.797 0 0 1-2.204 3.792.75.75 0 0 1-.848.175l-1.407-.617a1.38 1.38 0 0 0-1.926 1.114l-.169 1.526a.75.75 0 0 1-.572.647 9.518 9.518 0 0 1-4.406 0 .75.75 0 0 1-.572-.647l-.168-1.524a1.382 1.382 0 0 0-1.926-1.11l-1.406.616a.75.75 0 0 1-.849-.175 9.798 9.798 0 0 1-2.204-3.796.75.75 0 0 1 .272-.826l1.243-.916a1.38 1.38 0 0 0 0-2.226l-1.243-.914a.75.75 0 0 1-.271-.826 9.793 9.793 0 0 1 2.204-3.792.75.75 0 0 1 .85-.174l1.4.615a1.387 1.387 0 0 0 1.93-1.118l.17-1.526a.75.75 0 0 1 .583-.65c.717-.159 1.45-.243 2.201-.252Zm0 1.5a9.135 9.135 0 0 0-1.354.117l-.109.977A2.886 2.886 0 0 1 6.525 7.17l-.898-.394a8.293 8.293 0 0 0-1.348 2.317l.798.587a2.881 2.881 0 0 1 0 4.643l-.799.588c.32.842.776 1.626 1.348 2.322l.905-.397a2.882 2.882 0 0 1 4.017 2.318l.11.984c.889.15 1.798.15 2.687 0l.11-.984a2.881 2.881 0 0 1 4.018-2.322l.905.396a8.296 8.296 0 0 0 1.347-2.318l-.798-.588a2.881 2.881 0 0 1 0-4.643l.796-.587a8.293 8.293 0 0 0-1.348-2.317l-.896.393a2.884 2.884 0 0 1-4.023-2.324l-.11-.976a8.988 8.988 0 0 0-1.333-.117ZM12 8.25a3.75 3.75 0 1 1 0 7.5 3.75 3.75 0 0 1 0-7.5Zm0 1.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z"
-                            fill="#212121" />
-                    </svg>
-                    </Link>
+
                     <Link as="button" type="button" href="/logout" method="post">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.502 11.5a1.002 1.002 0 1 1 0 2.004 1.002 1.002 0 0 1 0-2.004Z" fill="#212121" />
@@ -82,29 +87,6 @@ onMounted(function () {
                     </svg>
                     </Link>
                 </div>
-            </div>
-
-            <div class="">
-                <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full">
-                    Friend Requests ({{ requestsCount }})
-                    <p>></p>
-                </button>
-
-                <div class="flex flex-col max-h-56 h-56 border border-t-0">
-
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-col gap-y-6 py-20 flex-shrink-0">
-            <slot></slot>
-        </div>
-
-        <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-h-screen">
-            <div class="h-12 p-2 flex flex-row justify-evenly">
-                <Link as="button" type="button" href="/home" method="get">friends</Link>
-                <Link as="button" type="button" href="/home/public" method="get">public</Link>
-                <Link as="button" type="button" href="/home/notifications" method="get">notifs.</Link>
             </div>
             <form @submit.prevent="postMessage" class="border h-72 p-4 flex flex-col justify-between">
                 <h1 class="font-medium text-lg">write a post!</h1>
@@ -119,6 +101,80 @@ onMounted(function () {
                     </span></p>
                 <button type="submit" class="w-fit">cend!</button>
             </form>
+        </div>
+
+        <div class="flex flex-col gap-y-6 py-20 flex-shrink-0">
+            <slot></slot>
+        </div>
+
+        <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-h-screen">
+            <div class="h-12 p-2 flex flex-row justify-evenly">
+                <Link as="button" type="button" href="/home" method="get">friends</Link>
+                <Link as="button" type="button" href="/home/public" method="get">public</Link>
+                <Link as="button" type="button" href="/home/notifications" method="get">notifs.</Link>
+            </div>
+            <div>
+                <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full"
+                    @click="() => { toggleRequest = !toggleRequest }">
+                    Friend Requests ({{ requestsCount }})
+                    <p>></p>
+                </button>
+
+                <div class="flex flex-col max-h-64 border border-t-0" v-if="toggleRequest">
+                    <div class="flex flex-col px-4 py-3 gap-y-2 border-b" v-for="request in friendRequests">
+                        <div class="flex flex-row gap-x-4 items-center">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.5 12a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm-5.477 2a6.47 6.47 0 0 0-.709 1.5H4.253a.749.749 0 0 0-.75.75v.577c0 .535.192 1.053.54 1.46 1.253 1.469 3.22 2.214 5.957 2.214.597 0 1.157-.035 1.68-.106.246.495.553.954.912 1.367-.795.16-1.66.24-2.592.24-3.146 0-5.532-.906-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.578A2.249 2.249 0 0 1 4.253 14h7.77Zm5.477 0-.09.008a.5.5 0 0 0-.402.402L17 14.5V17h-2.496l-.09.008a.5.5 0 0 0-.402.402l-.008.09.008.09a.5.5 0 0 0 .402.402l.09.008H17L17 20.5l.008.09a.5.5 0 0 0 .402.402l.09.008.09-.008a.5.5 0 0 0 .402-.402L18 20.5V18h2.504l.09-.008a.5.5 0 0 0 .402-.402l.008-.09-.008-.09a.5.5 0 0 0-.402-.402l-.09-.008H18L18 14.5l-.008-.09a.5.5 0 0 0-.402-.402L17.5 14ZM10 2.005a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+                                    fill="#212121" />
+                            </svg>
+                            <p class="leading-5">
+                                <span class="font-medium">@{{ request.user.username }}</span>
+                                <br>
+                                wants you to be their friend!
+                            </p>
+
+                        </div>
+
+                        <div class="flex flex-row gap-x-2 ml-10">
+                            <button type="button">Accept</button>
+                            <button type="button">Decline</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full"
+                    @click="() => { toggleRequest = !toggleRequest }">
+                    Your Notifications ({{ requestsCount }})
+                    <p>></p>
+                </button>
+
+                <div class="flex flex-col max-h-64 border border-t-0" v-if="toggleRequest">
+                    <div class="flex flex-col px-4 py-3 gap-y-2 border-b" v-for="request in friendRequests">
+                        <div class="flex flex-row gap-x-4 items-center">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.5 12a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm-5.477 2a6.47 6.47 0 0 0-.709 1.5H4.253a.749.749 0 0 0-.75.75v.577c0 .535.192 1.053.54 1.46 1.253 1.469 3.22 2.214 5.957 2.214.597 0 1.157-.035 1.68-.106.246.495.553.954.912 1.367-.795.16-1.66.24-2.592.24-3.146 0-5.532-.906-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.578A2.249 2.249 0 0 1 4.253 14h7.77Zm5.477 0-.09.008a.5.5 0 0 0-.402.402L17 14.5V17h-2.496l-.09.008a.5.5 0 0 0-.402.402l-.008.09.008.09a.5.5 0 0 0 .402.402l.09.008H17L17 20.5l.008.09a.5.5 0 0 0 .402.402l.09.008.09-.008a.5.5 0 0 0 .402-.402L18 20.5V18h2.504l.09-.008a.5.5 0 0 0 .402-.402l.008-.09-.008-.09a.5.5 0 0 0-.402-.402l-.09-.008H18L18 14.5l-.008-.09a.5.5 0 0 0-.402-.402L17.5 14ZM10 2.005a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+                                    fill="#212121" />
+                            </svg>
+                            <p class="leading-5">
+                                <span class="font-medium">@{{ request.user.username }}</span>
+                                <br>
+                                wants you to be their friend!
+                            </p>
+
+                        </div>
+
+                        <div class="flex flex-row gap-x-2 ml-10">
+                            <button type="button">Accept</button>
+                            <button type="button">Decline</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </template>

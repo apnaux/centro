@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home/notifications', [NotificationController::class, 'index']);
 
+    Route::get('/home/notifications/count', [NotificationController::class, 'count']);
+
     Route::get('/home/notifications/delete/{id}', [NotificationController::class, 'delete']);
 
     Route::delete('/post/{id}/delete', [PostController::class, 'delete']);
@@ -62,11 +64,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/friend/request/add/{username}', [FriendController::class, 'add_friend_request']);
 
-    Route::post('/friend/request/accept/{id}', [FriendController::class, 'accept_friend_request']);
+    Route::post('/friend/request/accept/{username}', [FriendController::class, 'accept_friend_request']);
 
     Route::delete('/friend/request/delete/{id}', [FriendController::class, 'delete_friend_request']);
 
-    Route::get('/me/count/friendrequest', [FriendController::class, 'check_count']);
+    Route::get('/friend/request', [FriendController::class, 'index']);
+
+    Route::get('/friend/request/count', [FriendController::class, 'check_count']);
 
     Route::post('/logout', [AccountController::class, 'logout']);
 });
