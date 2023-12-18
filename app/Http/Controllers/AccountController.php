@@ -30,7 +30,6 @@ class AccountController extends Controller
         ]);
     
         $user = new User();
-        $user->name = 'Test';
         $user->username = $validated['username'];
         $user->password = $validated['password'];
         $user->save();
@@ -41,6 +40,20 @@ class AccountController extends Controller
         }
     
         return redirect('/');
+    }
+
+    public function set_credentials(Request $request){
+        $validated = $request->validate([
+            'name' => 'required|max:32',
+            'bio' => 'max:64'
+        ]);
+
+        $user = User::find(Auth::id());
+        $user->name = $validated['name'];
+        $user->bio = $validated['bio'];
+        $user->save();
+
+        return redirect('/home');
     }
 
     public function logout(Request $request){

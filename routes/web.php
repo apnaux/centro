@@ -22,6 +22,10 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     if (Auth::check()) {
+        if(Auth::user()->name == ''){
+            return redirect('/hello');
+        }
+
         return redirect('/home');
     }
     return Inertia::render('Login');
@@ -32,6 +36,16 @@ Route::post('/login', [AccountController::class, 'login']);
 Route::post('/register', [AccountController::class, 'register']);
 
 Route::middleware('auth')->group(function () {
+    Route::get('/hello', function () {
+        if(isset(Auth::user()->name)){
+            return redirect('/home');
+        }
+
+        return Inertia::render('FirstRun');
+    });
+    
+    Route::post('/hello/set', [AccountController::class, 'set_credentials']);
+
     Route::get('/home', [PostController::class, 'index'])->name('home');
 
     Route::get('/home/retrieve', [PostController::class, 'retrieve_friends_posts']);

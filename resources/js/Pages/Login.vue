@@ -22,7 +22,6 @@ function createAccount() {
 
 <template>
     <div class="w-screen h-screen flex flex-col justify-center items-center gap-y-4">
-        <div class="border-4 h-12 w-96"></div>
         <form @submit.prevent="loginAccount" class="flex flex-col gap-y-6 p-6 border border-black w-96">
             <h1 class="font-medium text-lg">log in with your account!</h1>
             <input type="text" name="username" id="username" v-model="login.username" placeholder="Username">
