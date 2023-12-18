@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AccountController extends Controller
 {
@@ -46,5 +48,28 @@ class AccountController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');  
+    }
+
+    public function show_profile(Request $request, $username = null){
+        if(isset($username)){
+            $user = User::where('username', $username)->first();
+            return Inertia::render('Profile', [
+                'profile' => [
+                    'user' => $user,
+                    'friendsCount' => $user->friends()->where('accepted_request', true)->count(),
+                    'postsCount' => $user->posts()->count(),
+                    'likesCount' => $user->likes()->where('liked_type', Post::class)->count(),
+                ]
+            ]);
+        }
+
+        return Inertia::render('Profile', [
+            'profile' => [
+                'user' => Auth::user(),
+                'friendsCount' => $request->user()->friends()->where('accepted_request', true)->count(),
+                'postsCount' => $request->user()->posts()->count(),
+                'likesCount' => $request->user()->likes()->where('liked_type', Post::class)->count(),
+            ]
+        ]);
     }
 }

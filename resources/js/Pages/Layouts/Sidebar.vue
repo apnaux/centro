@@ -1,16 +1,31 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { onBeforeMount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps(['auth']);
+const page = usePage();
 
 const toggleRequest = ref(false);
 const requestsCount = ref(0);
 const friendRequests = ref({});
 
 const toggleNotifications = ref(false);
-const notificationsCount = ref(0);
-const notifications = ref({});
+const notificationsLoaded = ref(false);
+const notificationIntersect = ref(null);
+const notifications = ref({
+    info: {},
+    data: [],
+});
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            if(notifications.value.info.next_page_url != null){
+                notif_infinite_scroll_get();
+            }
+        }
+    });
+});
 
 const message = useForm({
     message: '',
@@ -32,12 +47,6 @@ onBeforeMount(function () {
             requestsCount.value = res.data.friendRequestCount;
         }
     );
-
-    axios.get('/home/notifications/count').then(
-        function (res) {
-            notificationsCount.value = res.data
-        }
-    );
 });
 
 onMounted(function () {
@@ -48,35 +57,60 @@ onMounted(function () {
                 console.log(res);
             }
         );
-
-        axios.get('/home/notifications/count').then(
-            function (res) {
-                notificationsCount.value = res.data
-            }
-        );
-    }, 30000);
+    }, 5000);
 });
 
 watch(toggleRequest, (x) => {
     if (x) {
-        axios.get('/friend/request').then(
-            function (res) {
-                friendRequests.value = res.data.friendRequests;
-            }
-        );
+        check_requests()
+    } else {
+        friendRequests.value = {};
     }
 });
 
 watch(toggleNotifications, (x) => {
+    notificationsLoaded.value = false;
     if (x) {
-        axios.get('/home/notifications').then(
-            function (res) {
-                notifications.value = res.data.notifications;
-                console.log(notifications.value);
-            }
-        );
+        check_notifs();
     }
 });
+
+watch(notificationIntersect, value => {
+    if (value != null) {
+        observer.observe(value);
+    }
+});
+
+function check_requests() {
+    axios.get('/friend/request').then(
+        function (res) {
+            friendRequests.value = res.data.friendRequests;
+        }
+    )
+}
+
+function check_notifs() {
+    axios.get('/home/notifications').then(
+        function (res) {
+            notifications.value.info = res.data.notifications;
+            notifications.value.data = res.data.notifications.data;
+        }
+    ).finally(() => {
+        notificationsLoaded.value = true;
+    });
+}
+
+function notif_infinite_scroll_get(){
+    axios.get(notifications.value.info.next_page_url).then(
+        function (res) {
+            notifications.value.info = res.data.notifications;
+            res.data.notifications.data.forEach(value => {
+                notifications.value.data.push(value);
+            });
+            console.log(notifications.value);
+        }
+    )
+}
 </script>
 
 <template>
@@ -95,7 +129,7 @@ watch(toggleNotifications, (x) => {
                 </div>
 
                 <div class="flex flex-row gap-x-2 items-center mr-4">
-                    <Link as="button" type="button" href="">
+                    <Link as="button" type="button" :href="'/profile/me '">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M17.754 14a2.249 2.249 0 0 1 2.25 2.249v.575c0 .894-.32 1.76-.902 2.438-1.57 1.834-3.957 2.739-7.102 2.739-3.146 0-5.532-.905-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.577a2.249 2.249 0 0 1 2.249-2.25h11.501Zm0 1.5H6.253a.749.749 0 0 0-.75.749v.577c0 .536.192 1.054.54 1.461 1.253 1.468 3.219 2.214 5.957 2.214s4.706-.746 5.962-2.214a2.25 2.25 0 0 0 .541-1.463v-.575a.749.749 0 0 0-.749-.75ZM12 2.004a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
@@ -137,9 +171,9 @@ watch(toggleNotifications, (x) => {
 
         <div class="flex flex-col gap-y-4 sticky top-0 left-0 py-20 mr-48 min-w-[22rem] max-w-[22rem] max-h-screen">
             <div class="h-12 p-2 flex flex-row justify-evenly">
-                <Link as="button" type="button" href="/home" method="get">friends</Link>
+                <Link as="button" type="button" href="/home" method="get">home</Link>
                 <Link as="button" type="button" href="/home/public" method="get">public</Link>
-                <Link as="button" type="button" href="/home/notifications" method="get">notifs.</Link>
+                <Link as="button" type="button" href="/search" method="get">search users</Link>
             </div>
             <div>
                 <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full"
@@ -165,17 +199,22 @@ watch(toggleNotifications, (x) => {
                         </div>
 
                         <div class="flex flex-row gap-x-2 ml-10">
-                            <button type="button">Accept</button>
-                            <button type="button">Decline</button>
+                            <Link as="button" type="button" method="post" @click="check_requests"
+                                :href="'/friend/request/accept/' + request.user.username">Accept</Link>
+                            <Link as="button" type="button" method="delete" @click="check_requests"
+                                :href="'/friend/request/delete/' + request.id">
+                            Decline</Link>
                         </div>
                     </div>
+
+                    <div v-if="friendRequests.length == 0" class="px-4 py-3">There are no friend requests..</div>
                 </div>
             </div>
 
             <div>
                 <button type="button" class="border py-6 px-6 flex flex-row justify-between w-full"
                     @click="() => { toggleNotifications = !toggleNotifications }">
-                    Your Notifications ({{ notificationsCount }})
+                    Your Notifications
                     <p>></p>
                 </button>
 
@@ -195,17 +234,21 @@ watch(toggleNotifications, (x) => {
                         </div>
 
                         <div class="flex flex-row gap-x-4 items-center"
-                            v-if="notification.type.includes('FriendRequestNotification')">
+                            v-else-if="notification.type.includes('FriendRequestNotification')">
                             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M17.5 12a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm-5.477 2a6.47 6.47 0 0 0-.709 1.5H4.253a.749.749 0 0 0-.75.75v.577c0 .535.192 1.053.54 1.46 1.253 1.469 3.22 2.214 5.957 2.214.597 0 1.157-.035 1.68-.106.246.495.553.954.912 1.367-.795.16-1.66.24-2.592.24-3.146 0-5.532-.906-7.098-2.74a3.75 3.75 0 0 1-.898-2.435v-.578A2.249 2.249 0 0 1 4.253 14h7.77Zm5.477 0-.09.008a.5.5 0 0 0-.402.402L17 14.5V17h-2.496l-.09.008a.5.5 0 0 0-.402.402l-.008.09.008.09a.5.5 0 0 0 .402.402l.09.008H17L17 20.5l.008.09a.5.5 0 0 0 .402.402l.09.008.09-.008a.5.5 0 0 0 .402-.402L18 20.5V18h2.504l.09-.008a.5.5 0 0 0 .402-.402l.008-.09-.008-.09a.5.5 0 0 0-.402-.402l-.09-.008H18L18 14.5l-.008-.09a.5.5 0 0 0-.402-.402L17.5 14ZM10 2.005a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
                                     fill="#212121" />
                             </svg>
 
-                            <p><span class="font-medium">@{{ notification.data.to_friend.username }}</span> wants to add you as
+                            <p><span class="font-medium">@{{ notification.data.to_friend.username }}</span> wants to add you
+                                as
                                 their friend!</p>
                         </div>
                     </div>
+
+                    <div v-if="notifications.data.length == 0" class="px-4 py-3">There are no notifications..</div>
+                    <div ref="notificationIntersect" v-if="notifications.data.length != 0 && notificationsLoaded"></div>
                 </div>
             </div>
 

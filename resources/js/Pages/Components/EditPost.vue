@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps(['post']);
+const emit = defineEmits(['updated']);
 
 const dialog = ref(null);
 const visible = ref(false);
@@ -29,6 +30,7 @@ function editExistPost() {
         },
         onSuccess: function () {
             closeDialog();
+            emit('updated');
             editPost.reset();
         },
     });

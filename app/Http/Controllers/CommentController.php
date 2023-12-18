@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
@@ -47,7 +48,14 @@ class CommentController extends Controller
     }
 
     public function delete(Request $request, $pid, $cid){
-        $comment = Comment::find($cid)->where('post_id', $pid)->first();
+        Log::debug([
+            'comment_id' => $cid,
+            'post_id' => $pid,
+        ]);
+
+        $comment = Comment::where('id', $cid)->first();
+        Log::debug($comment);
+        
         $likes = Like::where('liked_type', Comment::class)->where('liked_id', $cid);
 
         $comment->delete();
@@ -72,5 +80,9 @@ class CommentController extends Controller
         $like->delete();
 
         return back()->with('success', 'You\'ve unliked the comment.');
+    }
+
+    public function comment_count(Request $request, int $id){
+        return Comment::where('post_id', $id)->count();
     }
 }

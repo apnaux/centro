@@ -30,13 +30,14 @@ function load_posts() {
             res.data.paginated.data.forEach(value => {
                 posts.data.push(value);
             });
+            console.log(posts.data);
         }
     );
 }
 
 onMounted(() => {
     loaded.value = false;
-    axios.get('/home/retrieve').then(
+    axios.get('/home/public/retrieve').then(
         function (res) {
             loaded.value = true;
             posts.info = res.data.paginated;
@@ -51,10 +52,6 @@ watch(intersect, value => {
         observer.observe(value);
     }
 });
-
-function deleteOnArray(index){
-    posts.data.splice(index, 1);
-}
 </script>
 
 <script>
@@ -65,7 +62,7 @@ export default {
 
 <template>
     <div v-if="loaded == false">Loading posts...</div>
-    <PostEntry :post="post" :index="index" @deleted="deleteOnArray" v-for="(post, index) in posts.data" v-if="loaded"/>
+    <PostEntry :post="post" v-for="post in posts.data" v-if="loaded"/>
 
     <div v-if="loaded && posts.data.length == 0">There are no posts 😢</div>
     <div ref="intersect" v-if="loaded"></div>

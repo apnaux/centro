@@ -32,9 +32,13 @@ Route::post('/login', [AccountController::class, 'login']);
 Route::post('/register', [AccountController::class, 'register']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/home', [PostController::class, 'retrieve_friends_posts'])->name('home');
+    Route::get('/home', [PostController::class, 'index'])->name('home');
 
-    Route::get('/home/public', [PostController::class, 'retrieve_all_posts']);
+    Route::get('/home/retrieve', [PostController::class, 'retrieve_friends_posts']);
+
+    Route::get('/home/public', [PostController::class, 'index_public']);
+
+    Route::get('/home/public/retrieve', [PostController::class, 'retrieve_all_posts']);
 
     Route::get('/home/notifications', [NotificationController::class, 'index']);
 
@@ -42,7 +46,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home/notifications/delete/{id}', [NotificationController::class, 'delete']);
 
+    Route::get('/profile/me', [AccountController::class, 'show_profile']);
+
+    Route::get('/profile/{username}', [AccountController::class, 'show_profile']);
+
+    Route::get('/posts/user/{username}', [PostController::class, 'retrieve_user_posts']);
+
+    Route::get('/post/{id}', [PostController::class, 'retrieve_post']);
+    
     Route::delete('/post/{id}/delete', [PostController::class, 'delete']);
+
+    Route::get('/post/{id}/comments/count', [CommentController::class, 'comment_count']);
 
     Route::get('/post/{id}/comments', [CommentController::class, 'index']);
 
@@ -50,7 +64,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/post/{id}/like', [PostController::class, 'like_post']);
 
-    Route::post('/post/{id}/unlike', [PostController::class, 'unlike_post']);
+    Route::get('/post/{id}/like/count', [PostController::class, 'like_count']);
+
+    Route::get('/post/{id}/like/check', [PostController::class, 'get_if_liked']);
+
+    Route::get('/post/{id}/friend/check', [FriendController::class, 'check_friend_request']);
+
+    Route::delete('/post/{id}/unlike', [PostController::class, 'unlike_post']);
 
     Route::post('/post/create', [PostController::class, 'create_post']);
 
@@ -71,6 +91,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/friend/request', [FriendController::class, 'index']);
 
     Route::get('/friend/request/count', [FriendController::class, 'check_count']);
+
+    Route::get('/search', [FriendController::class, 'search_page']);
+
+    Route::get('/search/{query}', [FriendController::class, 'search_user']);
 
     Route::post('/logout', [AccountController::class, 'logout']);
 });

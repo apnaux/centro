@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Friend;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +42,6 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => Auth::user(),
-                'unreadNotificationCount' =>  isset($request->user()->unreadNotifications) ? $request->user()->unreadNotifications()->count() : 0,
             ],
             'messages' => [
                 'success' => $request->session()->get('success'),
