@@ -12,13 +12,13 @@ class AccountController extends Controller
 {
     public function login(Request $request){
         $validated = $request->validate([
-            'username' => 'required',
+            'username' => 'required|exists:users,username',
             'password'=> 'required',
         ]);
     
         if(Auth::attempt($validated)) {
             $request->session()->regenerate();
-            return redirect('/home');
+            return redirect('/hello');
         }
         return redirect('/');
     }
@@ -36,7 +36,7 @@ class AccountController extends Controller
     
         if(Auth::attempt($validated)){
             $request->session()->regenerate();
-            return redirect('/home');
+            return redirect('/');
         }
     
         return redirect('/');
