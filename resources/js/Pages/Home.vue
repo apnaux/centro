@@ -53,6 +53,7 @@ watch(intersect, value => {
 });
 
 function deleteOnArray(index){
+    console.log(index);
     posts.data.splice(index, 1);
 }
 </script>

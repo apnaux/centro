@@ -55,6 +55,11 @@ watch(intersect, value => {
         observer.observe(value);
     }
 });
+
+function deleteOnArray(index){
+    console.log(index);
+    posts.data.splice(index, 1);
+}
 </script>
 
 <script>
@@ -97,8 +102,7 @@ export default {
         </div>
     </div>
 
-    <!-- TODO: Add posts here -->
-    <PostEntry v-for="post in posts.data" :post="post" v-if="loaded" />
+    <PostEntry :post="post" :index="index" @deleted="deleteOnArray" v-for="(post, index) in posts.data" v-if="loaded" />
 
     <div ref="intersect" v-if="loaded"></div>
 </template>

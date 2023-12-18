@@ -7,6 +7,7 @@ import { ref, watch, watchEffect } from 'vue';
 import axios from 'axios';
 
 const props = defineProps(['post', 'index']);
+const emits = defineEmits(['deleted']);
 
 const box = ref(null);
 const edit = ref(null);
