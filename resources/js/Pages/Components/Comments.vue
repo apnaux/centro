@@ -49,7 +49,7 @@ function unlike_comment(){
         </div>
 
         <div class="flex flex-col text-sm gap-y-1">
-            <p class="font-medium">{{ comment.user.name }} @{{ comment.user.username }} id: {{ comment.id }}</p>
+            <p class="font-medium">{{ comment.user.name }} @{{ comment.user.username }}</p>
             <p>{{ comment.comment }}</p>
 
             <div class="flex flex-row gap-x-2">
